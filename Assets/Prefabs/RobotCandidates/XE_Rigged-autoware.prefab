@@ -56,6 +56,7 @@ GameObject:
   - component: {fileID: 114434180893946710}
   - component: {fileID: 114777814232615614}
   - component: {fileID: 114287573463807504}
+  - component: {fileID: 114889725077286506}
   m_Layer: 8
   m_Name: XE_Rigged-autoware
   m_TagString: Player
@@ -14160,6 +14161,18 @@ MonoBehaviour:
   currentHeight: 13.313803
   currentRotation: 270.326
   currentPosition: {x: 223.37859, y: 13.313793, z: 202.63927}
+--- !u!114 &114889725077286506
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 102736}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4583d24e0d13b04f9204580e7a14caf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SimulatorTopic: /clock
 --- !u!114 &114897952286374496
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -14209,6 +14222,7 @@ MonoBehaviour:
   - {fileID: 114830419000085136}
   - {fileID: 114960559805591706}
   - {fileID: 114533873977900050}
+  - {fileID: 114889725077286506}
   Tweakables: {fileID: 114434180893946710}
 --- !u!114 &114944026035704598
 MonoBehaviour:
