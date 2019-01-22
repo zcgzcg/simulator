@@ -28,7 +28,7 @@ public class UserInterfaceSetup : MonoBehaviour
     public RenderTextureDisplayer CameraPreview;
     public RenderTextureDisplayer ColorSegmentPreview;
     public DuckiebotPositionResetter PositionReset;
-    public Toggle HighQualityRendering;
+    public Toggle LowQualityRendering;
     public Text errorContent;
     public GameObject exitScreen;
 
@@ -49,8 +49,9 @@ public class UserInterfaceSetup : MonoBehaviour
 
     public void CheckStaticConfigTraffic()
     {
-        if (staticConfig.initialized)
+        if (staticConfig.initialized && MenuScript.isFirstStart)
         {
+            MenuScript.isFirstStart = false; // TODO need better way
             TrafSpawner.Instance.spawnDensity = staticConfig.initial_configuration.traffic_density;
             TrafficToggle.isOn = staticConfig.initial_configuration.enable_traffic;
             PedestriansToggle.isOn = staticConfig.initial_configuration.enable_pedestrian;
@@ -198,13 +199,24 @@ public class UserInterfaceSetup : MonoBehaviour
             {
                 FocusUI = robotSetup.UI;
                 inputControllers.ForEach(i => i.Enable());
-
+                robotSetup.GetComponentInChildren<LidarSensor>()?.Reset();
                 // TODO move to gameobject based
                 SimulatorManager.Instance?.SetCurrentActiveRobot(robotSetup.gameObject);
+
+                // set visual to true for radar, groundtruth2d, groundtruth3d
+                robotSetup.GetComponentInChildren<RadarSensor>()?.EnableVisualize(true);
+                robotSetup.GetComponentInChildren<GroundTruthSensor2D>()?.EnableVisualize(true);
+                robotSetup.GetComponentInChildren<GroundTruthSensor3D>()?.EnableVisualize(true);
             }
             else                
             {
                 inputControllers.ForEach(i => i.Disable());
+                               
+                // turn off sensors when not in focus
+                robotSetup.GetComponentInChildren<RadarSensor>()?.EnableVisualize(false);
+                robotSetup.GetComponentInChildren<GroundTruthSensor2D>()?.EnableVisualize(false);
+                robotSetup.GetComponentInChildren<GroundTruthSensor3D>()?.EnableVisualize(false);
+
             }
         }
 

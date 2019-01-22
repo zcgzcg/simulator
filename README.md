@@ -1,12 +1,29 @@
-# LGSVL Simulator: A ROS/ROS2 Multi-robot Simulator for Autonomous Vehicles
+<h1 align="center">LGSVL Simulator:  An Autonomous Vehicle Simulator</h1>
+
+<div align="center">
+<a href="https://github.com/lgsvl/simulator/releases/latest">
+<img src="https://img.shields.io/github/release-pre/lgsvl/simulator.svg" alt="Github release" /></a>
+<a href="">
+<img src="https://img.shields.io/github/downloads/lgsvl/simulator/total.svg" alt="Release downloads" /></a>
+</div>
+<div align="center">
+  <h4>
+    <a href="https://lgsvlsimulator.com" style="text-decoration: none">
+    Website</a>
+    <span> | </span>
+    <a href="https://lgsvlsimulator.com/docs" style="text-decoration: none">
+    Docs</a>
+    <span> | </span>
+    <a href="https://github.com/lgsvl/simulator/releases/latest" style="text-decoration: none">
+    Download</a>
+  </h4>
+</div>
 
 ## Introduction
 
-Please visit our new website at https://www.lgsvlsimulator.com
-
 LG Silicon Valley Lab has developed a Unity-based multi-robot simulator for autonomous vehicle developers. We provide an out-of-the-box solution which can meet the needs of developers wishing to focus on testing their autonomous vehicle algorithms. It currently has integration with the [Duckietown](https://github.com/lgsvl/duckietown2), TierIV's [Autoware](https://github.com/lgsvl/Autoware), and Baidu's [Apollo](https://github.com/lgsvl/apollo) platforms, can generate HD maps, and be immediately used for testing and validation of a whole system with little need for custom integrations. We hope to build a collaborative community among robotics and autonomous vehicle developers by open sourcing our efforts. 
 
-*To use the simulator with Apollo, after following the [build steps](#build) for the simulator, follow the guide on our [Apollo fork](https://github.com/lgsvl/apollo).*
+*To use the simulator with Apollo, after following the [build steps](Docs/build-instructions.md) for the simulator, follow the guide on our [Apollo fork](https://github.com/lgsvl/apollo).*
 
 *To use the simulator with Autoware, build the simulator then follow the guide on our [Autoware fork](https://github.com/lgsvl/Autoware).*
 
@@ -30,7 +47,16 @@ Running the simulator with reasonable performance and frame rate (for perception
 - Nvidia GTX 1080
 - Windows 10 64 Bit
 
-The easiest way to get started with running the simulator is to open it as a project in Unity and run inside the Unity Editor. Otherwise, you can build the Unity project into a standalone executable. Currently, running the simulator in Windows yields better performance than running on Linux. 
+The easiest way to get started with running the simulator is to download our [latest release](https://github.com/lgsvl/simulator/releases/latest) and run as a standalone executable.
+
+For the latest functionality or if you want to modify the simulator for your own needs, you can checkout our source, open it as a project in Unity, and run inside the Unity Editor. Otherwise, you can build the Unity project into a standalone executable.
+
+Currently, running the simulator in Windows yields better performance than running on Linux. 
+
+### Downloading and starting simulator
+
+1. Download the latest release of the LGSVL Simulator for your supported operating system (Windows or Linux) here: [https://github.com/lgsvl/simulator/releases/latest](https://github.com/lgsvl/simulator/releases/latest)
+2. Unzip the downloaded folder and run the executable.
 
 ### Steps for starting simulator in Unity Editor
 
@@ -52,7 +78,7 @@ The easiest way to get started with running the simulator is to open it as a pro
 
 6. Run the simulator. On the bottom left in the Project panel, Navigate to Assets->Scenes. Then double-click "Menu" (with the Unity icon next to it) to load the scene. At the top of the editor, click the Play button to start the simulator.
 
-![](Docs/images/readme-editor-menu.png)
+![](Docs/images/readme-editor-menu.jpg)
 
 
 
@@ -69,7 +95,7 @@ If you would prefer to not run in Unity Editor and build the standalone executab
 3. The vehicle/robot should spawn inside the map environment that was selected. Read [here](Docs/keyboard-shortcuts.md) for an explanation of all current keyboard shortcuts and controls.
 4. Follow the guides on our respective [Autoware](https://github.com/lgsvl/Autoware) and [Apollo](https://github.com/lgsvl/apollo) repositories for instructions on running the platforms with the simulator.
 
-![](Docs/images/readme-simulator.png)
+![](Docs/images/readme-simulator.jpg)
 
 
 
@@ -81,7 +107,7 @@ Look [here](Docs/keyboard-shortcuts.md) for a guide to currently available funct
 
 ## Contact
 
-Please feel free to provide feedback or ask questions by creating a Github issue. For inquiries about collaboration, please email Dmitry Zelenkovsky at dmitry.zelenkovsky@lge.com.
+Please feel free to provide feedback or ask questions by creating a Github issue. For inquiries about collaboration, please email us at contact@lgsvlsimulator.com.
 
 
 

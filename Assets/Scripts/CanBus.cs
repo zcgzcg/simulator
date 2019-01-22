@@ -59,6 +59,10 @@ public class CanBus : MonoBehaviour, Ros.IRosClient
         if (targetEnv == ROSTargetEnvironment.APOLLO)
         {
             Bridge.AddPublisher<Ros.Apollo.ChassisMsg>(ApolloTopic);
+        }
+
+        if (targetEnv == ROSTargetEnvironment.LGSVL)
+        {
             Bridge.AddPublisher<Ros.TwistStamped>(SimulatorTopic);
         }
 
@@ -67,7 +71,7 @@ public class CanBus : MonoBehaviour, Ros.IRosClient
 
     void Update()
     {
-        if (targetEnv != ROSTargetEnvironment.APOLLO && targetEnv != ROSTargetEnvironment.AUTOWARE)
+        if (targetEnv != ROSTargetEnvironment.APOLLO && targetEnv != ROSTargetEnvironment.AUTOWARE && targetEnv != ROSTargetEnvironment.LGSVL)
         {
             return;
         }
@@ -153,21 +157,26 @@ public class CanBus : MonoBehaviour, Ros.IRosClient
                 },
             };
 
+            Bridge.Publish(ApolloTopic, apolloMessage);
+        }
+
+        if (targetEnv == ROSTargetEnvironment.LGSVL)
+        {
             var simulatorMessage = new Ros.TwistStamped()
             {
                 header = new Ros.Header()
                 {
                     stamp = Ros.Time.Now(),
-                    seq = seq,
+                    seq = seq++,
                     frame_id = "",
                 },
                 twist = new Ros.Twist()
                 {
                     linear = new Ros.Vector3()
                     {
-                        x = input_controller.throttle * 100,
-                        y = input_controller.brake * 100,
-                        z = -controller.steerInput * 100,
+                        x = controller.steerInput,
+                        y = 0,
+                        z = 0,
                     },
                     angular = new Ros.Vector3()
                     {
@@ -178,10 +187,7 @@ public class CanBus : MonoBehaviour, Ros.IRosClient
                 },
             };
 
-            seq += 1;
-
-            Bridge.Publish(ApolloTopic, apolloMessage);
             Bridge.Publish(SimulatorTopic, simulatorMessage);
-        }        
+        }
     }
 }

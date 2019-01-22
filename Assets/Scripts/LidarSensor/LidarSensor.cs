@@ -120,7 +120,7 @@ public class LidarSensor : MonoBehaviour, Ros.IRosClient
         Reset();
     }
 
-    void Reset()
+    public void Reset()
     {
         Active.ForEach(req =>
         {
@@ -173,6 +173,11 @@ public class LidarSensor : MonoBehaviour, Ros.IRosClient
         CurrentMeasurementsPerRotation = MeasurementsPerRotation;
         CurrentFieldOfView = FieldOfView;
         CurrentCenterAngle = CenterAngle;
+    }
+
+    private void OnEnable()
+    {
+        Reset();
     }
 
     void OnDisable()
@@ -305,7 +310,7 @@ public class LidarSensor : MonoBehaviour, Ros.IRosClient
         }
 
         Camera.targetTexture = reader.Texture;
-        Camera.RenderWithShader(Shader, string.Empty);
+        Camera.RenderWithShader(Shader, "RenderType");
         reader.Start();
 
         var pos = Camera.transform.position;
