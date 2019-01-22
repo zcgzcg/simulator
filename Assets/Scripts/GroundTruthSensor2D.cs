@@ -5,6 +5,8 @@
  *
  */
 
+// #define VISUALIZE_RAYCAST
+
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
@@ -36,7 +38,6 @@ public class GroundTruthSensor2D : MonoBehaviour, Ros.IRosClient {
 
     private RenderTextureDisplayer cameraPreview;
     private RenderTextureDisplayer targetCameraPreview;
-    private AsyncTextureReader<byte> Reader;
 
     private static Texture2D backgroundTexture;
     private static GUIStyle textureStyle;
@@ -44,6 +45,7 @@ public class GroundTruthSensor2D : MonoBehaviour, Ros.IRosClient {
     private bool isCameraPredictionEnabled = false;
     private List<Ros.Detection2D> cameraPredictedObjects;
     private List<Ros.Detection2D> cameraPredictedVisuals;
+    private bool isVisualize = true;
 
     private void Awake() {
         var videoWidth = 1920;
@@ -65,7 +67,6 @@ public class GroundTruthSensor2D : MonoBehaviour, Ros.IRosClient {
         activeRT.Create();
         groundTruthCamera.targetTexture = activeRT;
 
-        Reader = new AsyncTextureReader<byte>(groundTruthCamera.targetTexture);
         GetComponentInParent<CameraSettingsManager>().AddCamera(groundTruthCamera);
         AddUIElement(groundTruthCamera);
 
@@ -101,15 +102,7 @@ public class GroundTruthSensor2D : MonoBehaviour, Ros.IRosClient {
     }
 
     void OnDestroy() {
-        if (Reader != null) {
-            Reader.Destroy();
-        }
-    }
-
-    void OnDisable() {
-        if (Reader != null) {
-            Reader.Reset();
-        }
+        groundTruthCamera.targetTexture.Release();
     }
 
     private void Start() {
@@ -117,14 +110,6 @@ public class GroundTruthSensor2D : MonoBehaviour, Ros.IRosClient {
 	}
 	
 	private void Update() {
-        if (isEnabled && Reader != null) {
-            Reader.Update();
-
-            if (Reader.Status != AsyncTextureReaderStatus.Reading) {
-                Reader.Start();
-            }
-        }
-
         if (isEnabled && cameraDetectedColliders != null) {
             detectedObjects = cameraDetectedColliders.Values.ToList();
             cameraDetectedColliders.Clear();
@@ -303,7 +288,9 @@ public class GroundTruthSensor2D : MonoBehaviour, Ros.IRosClient {
 
         if (Physics.Raycast(cameraRay, out hit, distance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) {
             if (hit.collider == detect) {
-                // Debug.DrawRay(start, direction * distance, Color.green);
+#if VISUALIZE_RAYCAST
+                Debug.DrawRay(start, direction * distance, Color.green);
+#endif
                 if (!cameraDetectedColliders.ContainsKey(detect)) {
                     Vector3 cen = detect.bounds.center;
                     Vector3 ext = detect.bounds.extents;
@@ -391,6 +378,9 @@ public class GroundTruthSensor2D : MonoBehaviour, Ros.IRosClient {
                     });
                 }
             }
+#if VISUALIZE_RAYCAST
+            else Debug.DrawRay(start, direction * distance, Color.red);
+#endif
         }
     }
 
@@ -471,7 +461,12 @@ public class GroundTruthSensor2D : MonoBehaviour, Ros.IRosClient {
         }
     }
 
+    public void EnableVisualize(bool enable) {
+        isVisualize = enable;
+    }
+
     void OnGUI() {
+        if (!isVisualize) return;
         if (isEnabled) {
             Visualize(detectedObjects, groundTruthCamera, cameraPreview);
         }

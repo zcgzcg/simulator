@@ -31,48 +31,33 @@ public class PedestrianManager : MonoBehaviour
 
     #region vars
     public bool isOptimizing = true;
-    public int perPedSpawnerCount = 3;
+    private bool isPedActive = false;
+    public int pedTotalCount = 100;
+    private int pedPerSegmentCount = 0;
     public GameObject pedPrefab;
     public List<GameObject> pedestrians; //source prefabs
 
-    private List<PedestrianSpawnerComponent> pedSpawners = new List<PedestrianSpawnerComponent>();
+    private List<MapPedestrianSegmentBuilder> pedSegments = new List<MapPedestrianSegmentBuilder>();
     
-    public GameObject mainPedGO { get; private set; }
-    private PedestrianComponent mainPedC;
-
-    private List<GameObject> npcGOs = new List<GameObject>();
-    private float distToUser;
-    private float pedRendDistanceThreshold = 150.0f;
+    private List<GameObject> pedPool = new List<GameObject>();
+    private List<GameObject> pedActive = new List<GameObject>();
+    private List<MapPedestrianSegmentBuilder> segInView = new List<MapPedestrianSegmentBuilder>();
+    private float pedRendDistanceThreshold = 250.0f;
     private int performanceUpdateRate = 60;
     private int frameCount = 0;
 
-    // test
-    public Transform target;
-    public bool testToTarget = false;
+    //private Transform activeCamera;
     #endregion
 
     #region mono
     private void Start()
     {
-        GetPedSpawners();
-        //SpawnNPCPedestrians();  
+        InitPedestrians();
     }
 
     private void Update()
     {
-        // test
-        if (testToTarget)
-        {
-            testToTarget = false;
-            SetMainPedDestination();
-        }
-
-        frameCount++;
-        if (isOptimizing && frameCount >= performanceUpdateRate)
-        {
-            frameCount = 0;
-            OptimizePedestrians();
-        }
+        OptimizePedestrians();
     }
 
     private void OnApplicationQuit()
@@ -82,103 +67,125 @@ public class PedestrianManager : MonoBehaviour
     }
     #endregion
 
-    #region methods
-    private void GetPedSpawners()
+    #region pedestrians
+    public void OptimizePedestrians()
     {
-        pedSpawners.Clear();
-        pedSpawners = new List<PedestrianSpawnerComponent>(FindObjectsOfType<PedestrianSpawnerComponent>());
-    }
-    #endregion
+        if (!isOptimizing) return;
+        if (!isPedActive) return;
+        
+        frameCount++;
 
-    #region mainPed
-    public void SetMainPedDestination()
-    {
-        mainPedC.SetPedDestination(target);
-    }
+        if (frameCount < performanceUpdateRate) return;
+        
+        frameCount = 0;
 
-    public void SetMainPedAnimation()
-    {
-        mainPedC.SetPedAnimation("EnterCar");
-    }
-
-    //private void SpawnMainPed(Transform spawnT = null)
-    //{
-    //    Vector3 tempV = Vector3.zero;
-    //    if (spawnT != null)
-    //        tempV = spawnT.position;
-
-    //    mainPedGO = Instantiate(pedPrefab, tempV, Quaternion.identity, this.transform);
-    //    Instantiate(pedestrians[(int)Random.Range(0, pedestrians.Count)], mainPedGO.transform);
-    //    mainPedGO.name = "MainPedestrian";
-
-    //    mainPedC = mainPedGO.GetComponent<PedestrianComponent>();
-    //    if (mainPedC != null)
-    //        mainPedC.InitPed(true);
-    //}
-
-    public PedestrianComponent SpawnMainPed(Transform spawnT = null)
-    {
-        if (mainPedGO != null)
-            Destroy(mainPedGO);
-
-        Vector3 tempV = Vector3.zero;
-        if (spawnT != null)
-            tempV = spawnT.position;
-
-        mainPedGO = Instantiate(pedPrefab, tempV, Quaternion.identity, this.transform);
-        Instantiate(pedestrians[(int)Random.Range(0, pedestrians.Count)], mainPedGO.transform);
-        mainPedGO.name = "MainPedestrian";
-
-        mainPedC = mainPedGO.GetComponent<PedestrianComponent>();
-        if (mainPedC != null)
-            mainPedC.InitPed(true);
-
-        return mainPedC;
-    }
-    #endregion
-
-    #region npcPed
-    public void SpawnNPCPedestrians()
-    {
-        KillNPCPedestrians();
-        StartCoroutine(SpawnNPCPeds());
-    }
-
-    private IEnumerator SpawnNPCPeds()
-    {
-        npcGOs.Clear();
-        for (int i = 0; i < pedSpawners.Count; i++)
+        // check if ped needs returned to pool
+        for (int i = 0; i < pedActive.Count; i++)
         {
-            for (int j = 0; j < perPedSpawnerCount; j++)
+            if (!CheckPositionInView(pedActive[i].transform.position))
             {
-                GameObject ped = Instantiate(pedPrefab, pedSpawners[i].GetPositionBetweenTargets(), Quaternion.identity, pedSpawners[i].transform);
-                npcGOs.Add(ped);
-                Instantiate(pedestrians[(int)Random.Range(0, pedestrians.Count)], ped.transform);
-                PedestrianComponent pedC = ped.GetComponent<PedestrianComponent>();
-                if (pedC != null)
-                    pedC.InitPed();
-                yield return new WaitForEndOfFrame();
+                ReturnPedestrianToPool(pedActive[i]);
             }
-            yield return new WaitForEndOfFrame();
         }
-    }
 
-    public void KillNPCPedestrians()
-    {
-        npcGOs.ForEach(p => { if (p != null) Destroy(p); });
-        npcGOs.Clear();
-        StopAllCoroutines(); //clean all 
-    }
-    #endregion
-
-    #region optimize
-    private void OptimizePedestrians()
-    {
-        for (int i = 0; i < npcGOs.Count; i++)
+        // get ped per seg count
+        segInView.Clear();
+        foreach (var seg in pedSegments)
         {
-            distToUser = TrafPerformanceManager.Instance.DistanceToNearestPlayerCamera(npcGOs[i].transform.position);
-            npcGOs[i].SetActive(distToUser < pedRendDistanceThreshold);
+            for (var i = 0; i < seg.segment.targetWorldPositions.Count; i++)
+            {
+                if (CheckPositionInView(seg.segment.targetWorldPositions[i]))
+                {
+                    segInView.Add(seg);
+                    break; // found a seg within threshold so add to segInView list
+                }
+            }
         }
+        if (segInView.Count != 0)
+            pedPerSegmentCount = Mathf.FloorToInt(pedTotalCount / segInView.Count);
+
+        // check if ped can be made active
+        foreach (var seg in segInView)
+        {
+            for (var i = 0; i < seg.segment.targetWorldPositions.Count; i++)
+            {
+                if (CheckPositionInView(seg.segment.targetWorldPositions[i]))
+                {
+                    int addCount = pedPerSegmentCount - seg.transform.childCount;
+                    if (addCount > 0)
+                    {
+                        for (int j = 0; j < addCount; j++)
+                            SpawnPedestrian(seg);
+                    }
+                    break; // found a waypoint within threshold so spawn at this seg
+                }
+            }
+        }   
+    }
+
+    public bool CheckPositionInView(Vector3 pos)
+    {
+        //activeCamera = get active ego camera
+        //return (Mathf.Abs(Vector3.Distance(pos, activeCamera.position)) < pedRendDistanceThreshold);
+        return (TrafPerformanceManager.Instance.DistanceToNearestPlayerCamera(pos) < pedRendDistanceThreshold); // TODO change
+    }
+
+    public void SpawnPedestrians()
+    {
+        isPedActive = true;
+    }
+    
+    public void KillPedestrians()
+    {
+        isPedActive = false;
+        List<PedestrianComponent> peds = new List<PedestrianComponent>(FindObjectsOfType<PedestrianComponent>());
+        for (int i = 0; i < peds.Count; i++)
+        {
+            ReturnPedestrianToPool(peds[i].gameObject);
+        }
+        pedActive.Clear();
+    }
+
+    private void InitPedestrians()
+    {
+        pedSegments.Clear();
+        pedSegments = new List<MapPedestrianSegmentBuilder>(FindObjectsOfType<MapPedestrianSegmentBuilder>());
+        for (int i = 0; i < pedSegments.Count; i++)
+        {
+            foreach (var localPos in pedSegments[i].segment.targetLocalPositions)
+                pedSegments[i].segment.targetWorldPositions.Add(pedSegments[i].transform.TransformPoint(localPos)); //Convert ped segment local to world position 
+        }
+
+        pedPool.Clear();
+        for (int i = 0; i < pedTotalCount; i++)
+        {
+            GameObject ped = Instantiate(pedPrefab, Vector3.zero, Quaternion.identity, transform);
+            pedPool.Add(ped);
+            Instantiate(pedestrians[(int)Random.Range(0, pedestrians.Count)], ped.transform);
+            ped.SetActive(false);
+        }
+    }
+
+    public void SpawnPedestrian(MapPedestrianSegmentBuilder seg)
+    {
+        if (pedPool.Count == 0) return;
+
+        GameObject ped = pedPool[0];
+        ped.transform.SetParent(seg.transform);
+        pedPool.RemoveAt(0);
+        pedActive.Add(ped);
+        ped.SetActive(true);
+        PedestrianComponent pedC = ped.GetComponent<PedestrianComponent>();
+        if (pedC != null)
+            pedC.InitPed(seg.segment.targetWorldPositions);
+    }
+
+    public void ReturnPedestrianToPool(GameObject go)
+    {
+        go.transform.SetParent(transform);
+        go.SetActive(false);
+        pedActive.Remove(go);
+        pedPool.Add(go);
     }
     #endregion
 }

@@ -65,11 +65,12 @@ public class RobotSetup : MonoBehaviour
         //     }
         // });
 
-        ui.HighQualityRendering.onValueChanged.AddListener(enabled =>
+        ui.LowQualityRendering.onValueChanged.AddListener(useLowQuality =>
         {
-            FollowCamera.GetComponent<PostProcessingBehaviour>().enabled = enabled;
-            CameraMan?.SetHighQualityRendering(enabled);
+            FollowCamera.GetComponent<PostProcessingBehaviour>().enabled = !useLowQuality;
+            CameraMan?.SetHighQualityRendering(!useLowQuality);
         });
+        ui.LowQualityRendering.onValueChanged.Invoke(ui.LowQualityRendering.isOn);
 
         ui.TrafficToggle.onValueChanged.AddListener(enabled =>
         {
@@ -102,11 +103,11 @@ public class RobotSetup : MonoBehaviour
         {
             if (enabled)
             {
-                FindObjectOfType<PedestrianManager>()?.SpawnNPCPedestrians();
+                FindObjectOfType<PedestrianManager>()?.SpawnPedestrians();
             }
             else
             {
-                FindObjectOfType<PedestrianManager>()?.KillNPCPedestrians();
+                FindObjectOfType<PedestrianManager>()?.KillPedestrians();
             }
 
             //hack to sync toggle value among car UIs
@@ -154,14 +155,18 @@ public class RobotSetup : MonoBehaviour
             ui.ToggleTweakable(Tweakables, "Main Camera", config.enable_main_camera);
             ui.ToggleTweakable(Tweakables, "Telephoto Camera", config.enable_telephoto_camera);
 
-            ui.HighQualityRendering.isOn = config.enable_high_quality_rendering;
+            ui.LowQualityRendering.isOn = !config.enable_high_quality_rendering;
             ui.SensorEffectsToggle.isOn = config.enable_sensor_effects;
         }
 
         // CES
-        GetComponent<CarInputController>()[InputEvent.TOGGLE_SENSOR_EFFECTS].Press += ToggleSensorEffect;
-        GetComponent<CarInputController>()[InputEvent.TOGGLE_TRAFFIC].Press += ToggleTraffic;
-        GetComponent<CarInputController>()[InputEvent.TOGGLE_UI].Press += ToggleUI;
+        CarInputController cc = FindObjectOfType<CarInputController>();
+        if (cc != null)
+        {
+            GetComponent<CarInputController>()[InputEvent.TOGGLE_SENSOR_EFFECTS].Press += ToggleSensorEffect;
+            GetComponent<CarInputController>()[InputEvent.TOGGLE_TRAFFIC].Press += ToggleTraffic;
+            GetComponent<CarInputController>()[InputEvent.TOGGLE_UI].Press += ToggleUI;
+        }
     }
 
     public void AddToNeedsBridge(Component comp)
@@ -250,7 +255,8 @@ public class RobotSetup : MonoBehaviour
     private void OnDestroy()
     {
         // CES
-        if (GetComponent<CarInputController>() != null)
+        CarInputController cc = FindObjectOfType<CarInputController>();
+        if (cc != null)
         {
             GetComponent<CarInputController>()[InputEvent.TOGGLE_SENSOR_EFFECTS].Press -= ToggleSensorEffect;
             GetComponent<CarInputController>()[InputEvent.TOGGLE_TRAFFIC].Press -= ToggleTraffic;

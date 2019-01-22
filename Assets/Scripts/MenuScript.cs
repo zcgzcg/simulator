@@ -128,7 +128,7 @@ public class MenuScript : MonoBehaviour
 
     public StaticConfig staticConfig = new StaticConfig();
 
-    static private bool isFirstStart = true;
+    static public bool isFirstStart = true;
 
     void Awake()
     {
@@ -173,7 +173,7 @@ public class MenuScript : MonoBehaviour
         {
             ShowFreeRoaming();
             OnRunClick();
-            isFirstStart = false;
+            //isFirstStart = false; // UserInterfaceSetup.cs sets this
         }
     }
 
@@ -461,6 +461,8 @@ public class MenuScript : MonoBehaviour
                 spawnInfoList.RemoveAt(spawnInfoList.Count - 1);
             }
 
+            GameObject bot = new GameObject();
+
             if (staticConfig.initialized)
             {
                 var gps = robotSetup.gameObject.transform.GetComponentInChildren<GpsDevice>();
@@ -470,14 +472,16 @@ public class MenuScript : MonoBehaviour
                 {
                     spawnPos = gps.GetPosition(pos.e, pos.n);
                     spawnPos.y = pos.h;
-
                     var rot = staticConfig.vehicles[i].orientation;
                     spawnRot = Quaternion.Euler(rot.r, rot.y, rot.p);
                 }
+                bot = Instantiate(robotSetup == null ? Robots.robotCandidates[0].gameObject : robotSetup.gameObject, spawnPos, spawnRot);
             }
-
-            var bot = Instantiate(robotSetup == null ? Robots.robotCandidates[0].gameObject : robotSetup.gameObject, spawnPos - new Vector3(0.25f * i, 0, 0), spawnRot);
-
+            else
+            {
+                bot = Instantiate(robotSetup == null ? Robots.robotCandidates[0].gameObject : robotSetup.gameObject, spawnPos - new Vector3(0.25f * i, 0, 0), spawnRot); // TODO better system
+            }
+            
             AnalyticsManager.Instance?.EgoStartEvent(robotSetup == null ? Robots.robotCandidates[0].gameObject.name : robotSetup.gameObject.name);
 
             var bridgeConnector = Robots.Robots[i];
