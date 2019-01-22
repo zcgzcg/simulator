@@ -29,6 +29,12 @@ public class RosClock : MonoBehaviour, Ros.IRosClient
 	// Update is called once per frame
 	void Update ()
     {
+
+    }
+
+    // Update is called in fixed Rate
+    void FixedUpdate()
+    {
         if (is_connected)
         {
             var clock_msg = new Ros.Clock();
