@@ -20,4 +20,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SanFrancisco.unity
     guid: 99f555df89caf93439a8c9239c801519
+  - enabled: 1
+    path: Assets/Scenes/Akiba.unity
+    guid: 72557b6dfcb8ff44fa4f0cf812cf86ce
   m_configObjects: {}
