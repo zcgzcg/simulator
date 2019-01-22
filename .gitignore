@@ -59,7 +59,7 @@ Assets/Prefabs/Materials.meta
 *.zip
 Assets/Plugins/**/**/*.pdb
 Assets/Plugins/**/**/*.pdb.meta
-
+Assets/ZRNAssets/*
 ROSBridgeIP.txt
 build.bat
 
