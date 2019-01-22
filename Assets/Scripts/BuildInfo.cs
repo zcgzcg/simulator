@@ -7,5 +7,5 @@
 
 public class BuildInfo
 {
-    public const string buildVersion = "${developer-build}"; 
+    public const string buildVersion = "developer-build"; 
 }
