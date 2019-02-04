@@ -642,7 +642,7 @@ namespace Map
                 };
             }
 
-            public static Lane MakeLane(int LnID, int DID, int BLID, int FLID, int LCnt, int Lno)
+            public static Lane MakeLane(int LnID, int DID, int BLID, int FLID, int BNID, int FNID, int LCnt, int Lno)
             {
                 return new Lane()
                 {
@@ -650,8 +650,8 @@ namespace Map
                     DID = DID,
                     BLID = BLID, //this is before lane id
                     FLID = FLID, //this is after lane id
-                    BNID = 1,
-                    FNID = 2,
+                    BNID = BNID,
+                    FNID = FNID,
                     JCT = 0,
                     BLID2 = 0,
                     BLID3 = 0,
@@ -815,6 +815,30 @@ namespace Map
                     PID = PID,
                     Hang = Hang,
                     Vang = Vang,
+                };
+            }
+        }
+
+        public struct Node
+        {
+            public int NID;
+            public int PID;
+
+            public static Node GetDefaultNode()
+            {
+                return new Node()
+                {
+                    NID = 1,
+                    PID = 1,
+                };
+            }
+
+            public static Node MakeNode(int NID, int PID)
+            {
+                return new Node()
+                {
+                    NID = NID,
+                    PID = PID,
                 };
             }
         }
